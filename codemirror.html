@@ -1,0 +1,160 @@
+<!doctype html>
+
+<head>
+  <title>CodeMirror: HTML completion demo</title>
+  <meta charset="utf-8"/>
+
+  <style>
+    /*.CodeMirror {
+      width: 400px !important;
+      height: 100px !important;
+    }*/
+    .breakpoints {width: .8em;}
+    .breakpoint { color: #822; }
+    /*.CodeMirror { border: 1px solid silver; }*/
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+      }
+    .CodeMirror-empty { outline: 1px solid #c22; }
+    .CodeMirror-empty.CodeMirror-focused { outline: none; }
+    .CodeMirror pre.CodeMirror-placeholder { color: #999; }
+    .some-css {
+      color: red;
+      line-height: 2;
+    }
+  </style>
+
+  <!-- style -->
+  <link rel="stylesheet" href="lib/codemirror.css">
+  <link rel="stylesheet" href="addon/hint/show-hint.css">
+  <link rel="stylesheet" href="theme/monokai.css">
+  <link rel="stylesheet" href="addon/display/fullscreen.css">
+  <link rel="stylesheet" href="addon/scroll/simplescrollbars.css">
+
+</head>
+
+<body>
+
+  <article>
+
+    <div id="code"></div>
+
+    <!-- <br>
+
+    <pre id="output" class="cm-s-default"></pre>
+
+    <button id="ok" type="button" name="button">OK!</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button id="engine" type="button" name="button">GENERAR!</button> -->
+
+    <div id="app">
+      <Item></Item>
+    </div>
+
+
+    <!-- lib -->
+    <script src="lib/codemirror.js"></script>
+    <script src="addon/mode/overlay.js"></script>
+    <script src="addon/mode/simple.js"></script>
+    <script src="addon/selection/selection-pointer.js"></script>
+    <script src="mode/xml/xml.js"></script>
+    <script src="mode/javascript/javascript.js"></script>
+    <script src="mode/coffeescript/coffeescript.js"></script>
+    <script src="mode/css/css.js"></script>
+    <script src="mode/sass/sass.js"></script>
+    <script src="mode/pug/pug.js"></script>
+    <script src="mode/htmlmixed/htmlmixed.js"></script>
+    <script src="mode/vue/vue.js"></script>
+    <script src="mode/handlebars/handlebars.js"></script>
+    <script src="addon/selection/active-line.js"></script>
+    <script src="addon/edit/closetag.js"></script>
+    <script src="addon/display/fullscreen.js"></script>
+    <script src="addon/display/placeholder.js"></script>
+    <script src="addon/edit/closebrackets.js"></script>
+    <script src="addon/fold/xml-fold.js"></script>
+    <script src="addon/edit/matchtags.js"></script>
+    <script src="addon/runmode/runmode.js"></script>
+    <script src="addon/scroll/simplescrollbars.js"></script>
+
+    <script src="addon/fold/foldcode.js"></script>
+    <script src="addon/fold/foldgutter.js"></script>
+    <script src="addon/fold/brace-fold.js"></script>
+    <script src="addon/fold/xml-fold.js"></script>
+    <script src="addon/fold/indent-fold.js"></script>
+    <script src="addon/fold/markdown-fold.js"></script>
+    <script src="addon/fold/comment-fold.js"></script>
+
+    <!-- keymap -->
+    <script src="keymap/sublime.js"></script>
+
+    <script src="jquery.js"></script>
+    <script src="vue.js"></script>
+
+    <script>
+
+      Vue.component('Item', {
+        template: '<li>This is a todo</li>'
+      })
+
+      var app = new Vue({
+        el: '#app',
+        data: () => ({
+          message: 'hola mundo'
+        }),
+        mounted () {
+          var k = CodeMirror(null,{mode: "vue"})
+          console.log(k.doc)
+        }
+      })
+
+      var val = "<template>\n  <div>\n    {{data}}\n  </div>\n</template>\n<script>\n  export default {\n  data () {\n  return {\n  data: '0'\n  }\n  }\n  }\n<script>";
+
+      $(document).ready(function () {
+
+        var codex = CodeMirror(document.getElementById("code"), {
+          mode: "vue",
+          lineNumbers: true,
+          keyMap: "sublime",
+          tabSize: 2,
+          styleActiveLine: true,
+          matchBrackets: true,
+          lineWrapping: true,
+          autoCloseTags: true,
+          autoCloseBrackets: true,
+          // theme: 'monokai',
+          gutters: ["CodeMirror-linenumbers", "breakpoints"],
+          matchTags: {bothTags: true},
+          extraKeys: { "Ctrl-J": "toMatchingTag", "Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); } },
+          placeholder: "tu script va aqui.!",
+          scrollbarStyle: "simple",
+          viewportMargin: Infinity,
+          readOnly: true,
+          value: val
+        });
+
+        codex.on("gutterClick", function(cm, n) {
+          var info = cm.lineInfo(n);
+          cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : makeMarker());
+        });
+
+        function makeMarker() {
+          var marker = document.createElement("div");
+          marker.style.color = "#FF0C00";
+          marker.innerHTML = "●";
+          return marker;
+        }
+
+        $('#ok').click(function () {
+          console.log(codex.doc.getValue())
+        });
+
+        $('#engine').click(function () {
+          CodeMirror.runMode(codex.doc.getValue(), "vue", document.getElementById("output"))
+        });
+
+      });
+
+    </script>
+  </article>
+</body>
