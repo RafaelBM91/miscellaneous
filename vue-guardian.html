@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <style media="screen"></style>
+  </head>
+  <body>
+
+    <div id="app">
+      <h1>{{test}}</h1>
+      <br />
+      {{$store.state.count}}
+      &nbsp;
+      <button type="button" v-on:click="click">Ok!</button>
+      <br /><br />
+      <router-link to="/">Index</router-link>
+      &nbsp;&nbsp;
+      <router-link to="/login">Login</router-link>
+      &nbsp;&nbsp;
+      <router-link to="/secure">Secure</router-link>
+      <br /><br />
+      <router-view></router-view>
+    </div>
+
+    <script src="/static/vue.js"></script>
+    <script src="/static/vuex.js"></script>
+    <script src="/static/vue-router.js"></script>
+    <!-- <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script> -->
+    <!-- <script src="/static/socket.io.js"></script> -->
+
+    <script type="text/javascript">
+
+      const store = new Vuex.Store({
+        state: {
+          count: 0
+        },
+        mutations: {
+          increment (state) {
+            state.count++
+          }
+        },
+        getters: {
+          getCount: state => () => state.count
+        }
+      })
+
+      var Index = { template: '<h1>--Index--</h1>' }
+      var Login = { template: '<h1>--Login--</h1>' }
+      var Secure = { template: '<h1>--secure--</h1>' }
+
+      var routes = [
+        { path: '/',
+          component: Index,
+          name: 'index',
+          meta: { requiresLogin: false }
+        },
+        { path: '/login',
+          component: Login,
+          name: 'login',
+          meta: { requiresLogin: false }
+        },
+        { path: '/secure',
+          component: Secure,
+          name: 'secure',
+          meta: { requiresLogin: true }
+        }
+      ]
+
+      var router = new VueRouter({
+        routes: routes
+      })
+
+      router.beforeEach((to, from, next) => {
+        var requiresLogin = to.matched.some( record => record.meta.requiresLogin )
+        if (requiresLogin) {
+          if (store.state.count > 5) {
+            next()
+          } else {
+            next({
+              path: '/login',
+              query: { redirect: to.fullPath } //parameters
+            })
+          }
+        } else {
+          next()
+        }
+      })
+
+      var vm = new Vue({
+        el: '#app',
+        router,
+        store,
+        data () {
+          return {
+            test: 'Sistema',
+            texto: ''
+          }
+        },
+        methods: {
+          click () {
+            this.$store.commit('increment')
+          }
+        },
+        created () {
+          this.$store.watch(
+            this.$store.getters.getCount, count => {
+              console.log('watched: ', count)
+          })
+        }
+      })
+    </script>
+
+  </body>
+</html>
